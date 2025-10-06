@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choices and Consequences: An Interactive Story</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: A variation of "Warm & welcoming", using neutral grays, a clean white, and a strong, trustworthy blue for interactive elements. -->
+    <!-- Application Structure Plan: The application is designed as a linear, "choose your own adventure" style narrative. It starts with an introduction, then presents the story in four sequential parts, each ending with a choice. This structure maximizes user engagement by making them an active participant. After the final choice, a personalized outcome is revealed, directly linking their actions to a consequence. A final "path summary" screen reinforces the learning objective by allowing students to reflect on their entire decision-making journey. This is more effective than a passive reading, as it creates a personal stake in the outcome. -->
+    <!-- Visualization & Content Choices: 
+        - Story Narrative -> Goal: Inform -> Presentation: Text block (HTML <p>) -> Interaction: Reading -> Justification: Standard and effective for storytelling.
+        - Decision Points -> Goal: Organize/Interact -> Presentation: Clickable buttons (HTML <button>) -> Interaction: User clicks to select their path -> Justification: Clear, direct interaction that makes the user commit to a choice, enhancing the feeling of agency.
+        - User's Path Summary -> Goal: Organize/Change -> Presentation: A styled flow diagram made of HTML divs and Tailwind CSS -> Interaction: Static display for reflection -> Justification: This visualizes the user's journey and decisions without using any SVG or Mermaid JS, fulfilling the technical constraints while serving the pedagogical goal of reflection.
+        - Outcomes -> Goal: Inform -> Presentation: Dynamic text block inside a styled card -> Interaction: Revealed at the end -> Justification: Delivers the "consequence" part of the lesson in a clear and impactful way.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <main id="app-container" class="max-w-3xl w-full mx-auto">
+        
+        <div id="start-screen" class="text-center bg-white p-8 rounded-xl shadow-lg fade-in">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">The Final Push</h1>
+            <p class="text-lg text-gray-600 mb-6">This is an interactive story about choices and consequences. You will follow Kiran, a third-semester engineering student, as they face a series of challenges. At each crossroad, your choice will shape the outcome. Read carefully and choose wisely.</p>
+            <button id="start-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">Start the Story</button>
+        </div>
+
+        <div id="story-screen" class="hidden">
+        </div>
+
+        <div id="end-screen" class="hidden bg-white p-8 rounded-xl shadow-lg fade-in">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Your Outcome</h2>
+            <div id="outcome-text" class="text-lg text-gray-700 leading-relaxed mb-8"></div>
+            
+            <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-6">Your Journey</h3>
+            <div id="path-summary" class="space-y-4"></div>
+
+            <button id="restart-btn" class="mt-8 bg-gray-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-gray-700 transition-all duration-300 transform hover:scale-105">Play Again</button>
+        </div>
+
+    </main>
+
+    <script>
+        const storyData = [
+            {
+                text: "Kiran was in the third semester of engineering, a time when the pressure really started to build. The theory was getting tougher, the practicals more demanding, and the future was starting to feel very real. The most immediate challenge was the mini-project. Kiran was paired with a classmate, Adarsh. A week before the project deadline, Kiran realised they were falling seriously behind. Adarsh, responsible for the core coding, admitted he was completely stuck. Panic began to set in.",
+                crossroad: "Crossroad 1: The Project Partner",
+                question: "What was the best way to handle this?",
+                choices: [
+                    { id: 1, text: "Tell Adarsh to hand over what he has. Finish the coding alone, even if it means staying up all night." },
+                    { id: 2, text: "Sit with Adarsh, review the problem together, and offer to help him work through the difficult parts as a team." },
+                    { id: 3, text: "Go to the professor, explain the partner wasn't contributing, and ask for a separate evaluation." }
+                ]
+            },
+            {
+                text: "The project situation, whatever Kiran decided, added a lot of stress. A few days later, while travelling on a crowded city bus, Kiran was reviewing notes. At the next stop, an elderly man got on, carrying a heavy bag. He looked tired and scanned the bus for a seat, but there were none. He ended up standing right next to Kiran.",
+                crossroad: "Crossroad 2: The Bus Seat",
+                question: "The man looked unsteady on his feet.",
+                choices: [
+                    { id: 1, text: "Pretend to be absorbed in the notes, avoiding eye contact." },
+                    { id: 2, text: "Signal to the man and offer him the seat." }
+                ]
+            },
+            {
+                text: "After getting off the bus, Kiran decided to grab a quick bite. While paying, Kiran noticed a new smartphone lying on the next table. The person who left it was nowhere in sight. The café was busy, and no one else seemed to have noticed it.",
+                crossroad: "Crossroad 3: The Lost Phone",
+                question: "For a moment, Kiran thought about how much a phone like that would cost.",
+                choices: [
+                    { id: 1, text: "Leave the phone where it is. It's not Kiran's problem." },
+                    { id: 2, text: "Pick up the phone and hand it to the café manager." },
+                    { id: 3, text: "Quietly slip the phone into the bag." }
+                ]
+            },
+            {
+                text: "Finally, the day of the mini-project presentation arrived. After the demonstration, the external examiner, a senior engineer from a top tech firm, looked at Kiran. 'Your documentation looks solid,' she said, 'But tell me, what was the biggest challenge you faced, and how did you personally overcome it?'",
+                crossroad: "Crossroad 4: The Final Question",
+                question: "This was a chance to either take all the credit or be honest.",
+                choices: [
+                    { id: 1, text: "Claim credit: 'The main challenge was a complex coding block that I had to solve by myself after putting in several extra nights of work.'" },
+                    { id: 2, text: "Be honest: 'The biggest challenge was a roadblock in the coding. My partner and I had to work together closely to figure it out.'" }
+                ]
+            },
+            {
+                text: "'Thank you for your answer,' the examiner said, making a final note on her evaluation sheet. She gave a noncommittal smile, and the presentation was over. Kiran walked out of the room, the semester's hard work culminating in that single moment. The final grade, and the impression left, was now set.",
+                isCliffhanger: true
+            }
+        ];
+
+        const endings = {
+            '1111': "The project gets a decent grade, but the examiner notes a lack of collaboration. Kiran feels a hollow victory, knowing the success came at the cost of teamwork and a few small compromises. The feeling is one of competence, but also isolation.",
+            '1112': "The project is marked well, but Kiran’s answer contradicts Adarsh's version of events. The inconsistency leaves the professor and examiner with a sense of doubt. The outcome is a good grade overshadowed by unease.",
+            '1121': "Kiran’s solo effort earns a top grade. The examiner is impressed by the technical skill. This success, built on cutting a few corners in integrity, feels good for now, leaving Kiran with the belief that sometimes, the ends justify the means.",
+            '1122': "The project gets a high grade. The honesty about teamwork, however, feels slightly hypocritical after the other choices. It’s a successful outcome, but Kiran is left with a confusing internal conflict.",
+            '1131': "The project grade is excellent, but Kiran is filled with a constant, low-level anxiety. The guilt from taking the phone casts a shadow, making it hard to enjoy the academic success. The semester ends with a feeling that something is deeply wrong.",
+            '1132': "The project is a success. But the act of theft weighs heavily on Kiran’s conscience. Even while explaining the importance of teamwork, a voice of guilt whispers, making the success feel unearned and fragile.",
+            '1211': "The project gets a good grade, a testament to Kiran's hard work. The small act of kindness on the bus is a distant memory, but it balances the selfishness of other choices. The result is a mix of pride and a quiet, nagging feeling of having fallen short in character.",
+            '1212': "The project is successful. Kiran feels good about the final grade and the positive impression of teamwork left with the examiner. The memory of helping the elderly man brings a small, genuine smile. A successful outcome, tempered by knowing a few choices could have been better.",
+            '1221': "The project is a success, and the examiner is impressed by Kiran’s technical prowess. The acts of integrity—giving the seat and returning the phone—create a strong internal foundation of self-respect. The semester ends with a feeling of being both competent and good.",
+            '1222': "The project gets a great grade, and the examiner is genuinely impressed by Kiran's honest and collaborative attitude. Combined with the quiet integrity of the previous choices, Kiran feels a profound sense of rightness. The success is not just external, but internal, bringing deep satisfaction and peace.",
+            '1231': "The project is a success, but the guilt of taking the phone is a major burden. The good deeds feel cancelled out by this one significant lapse in integrity. Kiran ends the semester feeling like an imposter, the good grade providing no real comfort.",
+            '1232': "The project grade is high, but the internal conflict is intense. Kiran spoke of teamwork and did acts of kindness, but the theft of the phone feels like a core betrayal of those values. The semester ends with confusion and a powerful lesson on how one bad decision can poison many good ones.",
+            '2111': "The project gets an excellent grade, and the teamwork is praised. However, Kiran feels a subtle sense of disconnect. The collaborative success feels at odds with the small, selfish choices made when no one was watching. The feeling is one of achievement mixed with slight disappointment in oneself.",
+            '2112': "The project grade is high, and the honest answer about teamwork resonates. However, the memory of ignoring the elderly man surfaces, creating a small pang of regret. Success, but with the clear lesson that character is defined in small moments, not just big presentations.",
+            '2121': "The project is a success, praised for its collaborative spirit. Kiran feels proud, and the integrity of returning the phone provides a quiet, solid feeling of self-worth. The semester ends with a sense of accomplishment and the knowledge that building things and building character can go hand in hand.",
+            '2122': "A standout outcome. The project receives top marks, with the examiner specifically praising the collaborative and honest approach. Every choice has reinforced integrity, and Kiran feels an unshakable sense of confidence and peace. A clear demonstration of how good choices compound into a truly successful result.",
+            '2131': "The project is a success, but it brings no joy. The theft of the phone creates a huge internal conflict with the value of teamwork that Kiran worked so hard to uphold. The semester ends with a heavy heart and the stark realization that integrity cannot be compartmentalized.",
+            '2132': "The project gets a great grade, but Kiran is deeply troubled. Praised for honesty and teamwork, Kiran feels like a fraud because of the stolen phone. The experience becomes a powerful, painful lesson in how a single act of dishonesty can undermine a foundation of hard work and collaboration.",
+            '2211': "The project is a success, and the teamwork is noted positively. The small acts of integrity give Kiran a quiet sense of satisfaction, though the final answer feels a bit like taking undue credit. The result is a good one, but not perfect, leaving room for reflection.",
+            '2212': "The project is a great success, and the examiner is very impressed with the honest, team-focused answer. This, combined with the previous good deeds, makes Kiran feel proud and confident. The semester ends on a high note, with both academic success and a clear conscience.",
+            '2221': "The project is highly praised for its excellent execution and teamwork. When Kiran takes all the credit, it feels jarring after having made so many right choices. The success is real, but it feels slightly tarnished by the final, self-serving statement.",
+            '2222': "A truly positive outcome. The project is a huge success, and the examiner commends Kiran's integrity and teamwork. Every choice made has been positive, leading to a result that is not just a good grade, but a source of genuine pride and self-respect. Kiran feels ready for any challenge.",
+            '2231': "The excellent project grade feels meaningless. The dissonance between working as a team, helping others, and then committing a crime is overwhelming. Kiran is left with a profound sense of self-disappointment, realizing that one major negative action can undo a hundred small positive ones.",
+            '2232': "The project is a success, but Kiran feels terrible. Having been praised for teamwork and honesty after stealing the phone feels like the ultimate hypocrisy. The semester ends not with a sense of achievement, but with a powerful and bitter lesson on the weight of a guilty conscience.",
+            '3111': "Kiran gets a good individual grade, but the professor notes the inability to work as a team. Adarsh gets a failing grade. The success feels selfish, and Kiran is seen by classmates as someone who is not a team player.",
+            '3112': "Kiran gets a good individual grade, but the professor notes the inability to work as a team. Adarsh gets a failing grade. The success feels selfish, and Kiran is seen by classmates as someone who is not a team player.",
+            '3121': "Kiran’s solo grade is high, but the reputation as a poor team player is solidified. Even with the act of personal integrity (returning the phone), the professional damage is done. The lesson is that personal ethics and professional collaboration are both essential.",
+            '3122': "Kiran’s solo grade is high, but the reputation as a poor team player is solidified. Even with the act of personal integrity (returning the phone), the professional damage is done. The lesson is that personal ethics and professional collaboration are both essential.",
+            '3211': "Kiran’s grade is good, but the class and professor now view Kiran as someone difficult to work with. The personal act of kindness on the bus feels disconnected from the professional choice to abandon a teammate. Academic success at the cost of social respect.",
+            '3212': "Kiran’s grade is good, but the class and professor now view Kiran as someone difficult to work with. The personal act of kindness on the bus feels disconnected from the professional choice to abandon a teammate. Academic success at the cost of social respect.",
+            '3221': "While Kiran’s grade is secure, the reputation is not. The examiner, hearing about the situation, makes a note about poor collaboration skills. The lesson learned is that how you get the result is often as important as the result itself.",
+            '3222': "While Kiran’s grade is secure, the reputation is not. The examiner, hearing about the situation, makes a note about poor collaboration skills. The lesson learned is that how you get the result is often as important as the result itself.",
+            '3131': "Kiran gets a decent grade, but feels awful. Abandoning a teammate and then committing an act of theft creates a powerful negative spiral. The semester ends with academic survival but a deep sense of moral failure.",
+            '3132': "Kiran gets a decent grade, but feels awful. Abandoning a teammate and then committing an act of theft creates a powerful negative spiral. The semester ends with academic survival but a deep sense of moral failure.",
+            '3231': "Kiran gets a decent grade, but feels awful. Abandoning a teammate and then committing an act of theft creates a powerful negative spiral. The semester ends with academic survival but a deep sense of moral failure.",
+            '3232': "Kiran gets a decent grade, but feels awful. Abandoning a teammate and then committing an act of theft creates a powerful negative spiral. The semester ends with academic survival but a deep sense of moral failure."
+        };
+
+        let currentStep = 0;
+        let userChoices = [];
+        let choiceDetails = [];
+
+        const startScreen = document.getElementById('start-screen');
+        const storyScreen = document.getElementById('story-screen');
+        const endScreen = document.getElementById('end-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        function showStoryStep() {
+            const stepData = storyData[currentStep];
+            let choicesHTML = '';
+            
+            if (stepData.choices) {
+                choicesHTML = `
+                    <div class="mt-8 border-t border-gray-200 pt-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">${stepData.crossroad}</h3>
+                        <p class="text-gray-600 mb-4">${stepData.question}</p>
+                        <div class="space-y-3">
+                            ${stepData.choices.map(choice => `
+                                <button class="choice-btn w-full text-left p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-colors duration-200" data-id="${choice.id}" data-text="${choice.text}">
+                                    <span class="font-semibold text-blue-600">${choice.id}.</span> ${choice.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let cliffhangerButton = '';
+            if (stepData.isCliffhanger) {
+                cliffhangerButton = `<button id="reveal-btn" class="mt-8 bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">See Your Outcome</button>`;
+            }
+
+            storyScreen.innerHTML = `
+                <div class="bg-white p-8 rounded-xl shadow-lg fade-in">
+                    <p class="text-lg text-gray-700 leading-relaxed">${stepData.text}</p>
+                    ${choicesHTML}
+                    <div class="text-center">
+                        ${cliffhangerButton}
+                    </div>
+                </div>
+            `;
+
+            document.querySelectorAll('.choice-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const choiceId = e.currentTarget.dataset.id;
+                    const choiceText = e.currentTarget.dataset.text;
+                    userChoices.push(choiceId);
+                    choiceDetails.push({
+                        crossroad: stepData.crossroad,
+                        choiceText: choiceText
+                    });
+                    currentStep++;
+                    showStoryStep();
+                });
+            });
+
+            if (stepData.isCliffhanger) {
+                document.getElementById('reveal-btn').addEventListener('click', showEndScreen);
+            }
+        }
+
+        function showEndScreen() {
+            const choiceKey = userChoices.join('');
+            const outcome = endings[choiceKey] || "An unexpected path has led to an unknown destination. Reflect on your choices and the journey you took.";
+            
+            document.getElementById('outcome-text').textContent = outcome;
+            
+            const pathSummaryContainer = document.getElementById('path-summary');
+            pathSummaryContainer.innerHTML = ''; 
+
+            choiceDetails.forEach((detail, index) => {
+                const stepElement = document.createElement('div');
+                stepElement.className = 'flex items-start';
+                stepElement.innerHTML = `
+                    <div class="flex-shrink-0 flex flex-col items-center mr-4">
+                        <div class="bg-blue-500 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold">${index + 1}</div>
+                        ${index < choiceDetails.length - 1 ? '<div class="w-px h-8 bg-gray-300 mt-1"></div>' : ''}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">${detail.crossroad}</h4>
+                        <p class="text-gray-600">${detail.choiceText}</p>
+                    </div>
+                `;
+                pathSummaryContainer.appendChild(stepElement);
+            });
+
+            storyScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+        }
+
+        function resetStory() {
+            currentStep = 0;
+            userChoices = [];
+            choiceDetails = [];
+            endScreen.classList.add('hidden');
+            storyScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            storyScreen.classList.remove('hidden');
+            showStoryStep();
+        });
+
+        restartBtn.addEventListener('click', resetStory);
+
+    </script>
+
+</body>
+</html>
